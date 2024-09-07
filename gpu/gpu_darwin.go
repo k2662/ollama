@@ -20,27 +20,12 @@ const (
 )
 
 func GetGPUInfo() GpuInfoList {
-	mem, _ := GetCPUMem()
-	if runtime.GOARCH == "amd64" {
-		return []GpuInfo{
-			{
-				Library: "cpu",
-				Variant: GetCPUCapability().String(),
-				memInfo: mem,
-			},
-		}
-	}
-	info := GpuInfo{
-		Library: "metal",
-		ID:      "0",
-	}
-	info.TotalMemory = uint64(C.getRecommendedMaxVRAM())
-
-	// TODO is there a way to gather actual allocated video memory? (currentAllocatedSize doesn't work)
-	info.FreeMemory = info.TotalMemory
-
-	info.MinimumMemory = metalMinimumMemory
-	return []GpuInfo{info}
+	gpu_info := GpuInfo{ID: "0"}
+	gpu_info.Library = "metal"
+	gpu_info.TotalMemory = uint64(C.getRecommendedMaxVRAM())
+	gpu_info.FreeMemory = gpu_info.TotalMemory
+	gpu_info.MinimumMemory = metalMinimumMemory
+	return []GpuInfo{gpu_info}
 }
 
 func GetCPUInfo() GpuInfoList {
