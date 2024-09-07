@@ -10,7 +10,6 @@ package gpu
 import "C"
 
 import (
-	"runtime"
 
 	"github.com/ollama/ollama/format"
 )
