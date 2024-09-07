@@ -26,13 +26,25 @@ case "${GOARCH}" in
     COMMON_CPU_DEFS="${COMMON_DARWIN_DEFS} -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -DCMAKE_OSX_ARCHITECTURES=${ARCH} -DGGML_METAL=off -DGGML_NATIVE=off"
 
     # Static build for linking into the Go binary
-    init_vars
-    CMAKE_TARGETS="--target llama --target ggml"
-    CMAKE_DEFS="${COMMON_CPU_DEFS} -DGGML_BLAS=off -DGGML_ACCELERATE=off -DGGML_AVX=off -DGGML_AVX2=off -DGGML_AVX512=off -DGGML_FMA=off -DGGML_F16C=off ${CMAKE_DEFS}"
-    BUILD_DIR="../build/darwin/${ARCH}_static"
-    echo "Building static library"
-    build
-
+    if [ -z "${OLLAMA_SKIP_STATIC_GENERATE}" -o "${OLLAMA_CPU_TARGET}" = "static" ]; then
+        init_vars
+        CMAKE_TARGETS="--target llama --target ggml"
+        CMAKE_DEFS="${COMMON_CPU_DEFS} -DGGML_BLAS=off -DGGML_ACCELERATE=off -DGGML_AVX=off -DGGML_AVX2=off -DGGML_AVX512=off -DGGML_FMA=off -DGGML_F16C=off ${CMAKE_DEFS}"
+        BUILD_DIR="../build/darwin/${ARCH}_static"
+        echo "Building static library"
+        build
+     fi
+     if [ -z "$OLLAMA_SKIP_METAL_GENERATE" ]; then
+        init_vars
+        CMAKE_DEFS="${COMMON_DARWIN_DEFS} -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -DCMAKE_OSX_ARCHITECTURES=${ARCH} ${CMAKE_DEFS}"
+        CMAKE_DEFS="${COMMON_CPU_DEFS} -DGGML_METAL=on -DGGML_ACCELERATE=on -DGGML_AVX=on -DGGML_AVX2=on -DGGML_AVX512=off -DGGML_FMA=on ${CMAKE_DEFS}"
+        BUILD_DIR="../build/darwin/${ARCH}/metal"
+        echo "Building metal GPU"
+        EXTRA_LIBS="${EXTRA_LIBS} -framework Accelerate -framework Foundation -framework Metal -framework MetalKit -framework MetalPerformanceShaders"
+        build
+        sign ${BUILD_DIR}/bin/ollama_llama_server
+        compress
+    fi
     if [ -z "$OLLAMA_SKIP_CPU_GENERATE" ]; then
         #
         # CPU first for the default library, set up as lowest common denominator for maximum compatibility (including Rosetta)
