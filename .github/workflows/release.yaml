@@ -13,8 +13,8 @@ jobs:
       - name: Set Version
         shell: bash
         run: |
-          echo "VERSION=v0.3.9" >> $GITHUB_ENV
-          echo "RELEASE_VERSION=$(echo 'v0.3.9')" >> $GITHUB_ENV
+          echo "VERSION=v0.3.10" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=$(echo 'v0.3.10')" >> $GITHUB_ENV
       - name: key
         env:
           MACOS_SIGNING_KEY: ${{ secrets.MACOS_SIGNING_KEY }}
